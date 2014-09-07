@@ -1,0 +1,100 @@
+%html
+  %head    
+    %title Do In a Day    
+    %meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}
+    %meta{:content => "", :name => "description"}
+    %meta{:content => "", :name => "author"}
+    %meta{:content => "yes", :name => "apple-mobile-web-app-capable"}
+    = javascript_include_tag 'jquery-1.7.2.min.js','application.js'
+    %link{:charset => "utf-8", :href => "/css/apercu.css", :rel => "stylesheet", :type => "text/css"}
+    %link{:href => "/assets/doinaday_icon.png", :rel => "apple-touch-icon"}
+    = stylesheet_link_tag 'jquery-ui-1.8.20.custom.css', 'thickbox.css', "bootstrap.css", "bootstrap-responsive.css"
+    = csrf_meta_tags        
+  %body
+    - if session[:user_id].blank?
+      .signup-unit
+        .signup-container
+          %h1
+            Day Trip City Guides!
+          %p
+            Start creating your city guide now!
+          %p
+            =link_to image_tag('facebook_btn.png'), "/auth/facebook"
+    .navbar
+      .navbar-inner
+        .container
+          .span3
+          %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand.nav
+            =image_tag( "logo.png", :onclick => "window.location.href = '/'")
+          .nav-collapse
+            .nav
+              %userlogedin{:style => "float:right;"}
+                - if session[:user_id].nil?
+                  = link_to image_tag( 'fb_login.png'), "/auth/facebook"
+                  = link_to  "Login", "/auth/facebook"
+                - else
+                  - @user = User.find_by_uid(session[:user_id])
+                  - url = '/'+@user.to_param.split(" ").join
+                  /name_path(@user,:id => @user.id)
+                  %a{"data-toggle" => "dropdown", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
+                    = image_tag(@user.img,:style => "float:left; margin-top:0px; margin-top:10px; border-radius: 35px;", :size => '25x25')
+                  %a.userlogedin{:style => "float:left;", :href =>'/users/profile?user_id='+@user.id.to_s , :method => 'post'}
+                    = @user.name
+                  .userlogout
+                    = link_to "Logout", "/sessions/destroy"
+              %li
+                = link_to "Create Guide", new_guide_path
+              %li
+                %a{:href => "#contact"} Top Places
+              %li
+                %a{:href => "#about"} Popular Guides
+
+
+    = javascript_include_tag 'jquery-1.7.2.min.js','http://maps.googleapis.com/maps/api/js?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg&libraries=geometry,places&sensor=false','http://www.google.com/jsapi?key=AIzaSyARDa-zSGZaZpd_U05Qxu4tkqRHJg6Vieg','jquery-ui-1.8.20.custom.min.js', 'thickbox.js', 'bootstrap-transition.js', "bootstrap-alert.js", "bootstrap-modal.js", "bootstrap-dropdown.js", "bootstrap-scrollspy.js", "bootstrap-tab.js", "bootstrap-tooltip.js", "bootstrap-popover.js", "bootstrap-button.js", "bootstrap-collapse.js", "bootstrap-carousel.js", "bootstrap-typeahead.js", "jquery.masonry.min.js"
+    = javascript_include_tag "application", "http://html5shim.googlecode.com/svn/trunk/html5.js",'jquery-ui-1.8.20.custom.min.js', 'bootstrap.js', "//ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js", "/javascripts/jquery.masonry.min.js"
+  /
+    #header-div 
+      = submit_tag "Do In a Day",:onclick => 'window.location.href = "/"', :style=>'float:left;background-color:#230C0C;font-size:22px;margin:20px 0 0 0;'
+      = link_to "Create", new_guide_path      
+      = submit_tag "Browse", :id=>'browse', :style => 'background-color:#230C0C;'
+      = text_field_tag "key_word",'', :class=>'search_field'
+      #login_div{:style => "position:fixed;top:0px;right:10px;font-size:20px;color:#4A8CEF;"}
+        - if session[:user_id].nil?          
+          =link_to image_tag('facebook_btn.png'), "/auth/facebook"
+        - else
+          - @user = User.find_by_uid(session[:user_id])
+          = image_submit_tag @user.img, :onclick=>'window.location = "/users/profile"', :style=> "width:40px;"
+          = link_to @user.name, "/users/profile"
+          = link_to "Logout", "/sessions/destroy"
+    #notice
+      = notice
+    = yield
+
+:javascript
+  $('document').ready(function(){	
+  	$('#browse').click(function(){  
+  		$.ajax({
+                               // type : "GET",
+                                datatype: 'html',
+                                url: 'guides/search?keyword='+$("#key_word").val(),
+
+                               /* success: function(data) {
+                                $('#content-div').empty();
+                                alert(data);
+                                console.log("Im here");
+                                console.log(data);
+  								jQuery('#content-div').html(data);
+                                },
+                                error : function() {
+                                         alert("Sorry, The requested property could not be found.");
+                                }*/
+                        }).done(function( html ) {
+                            $("#content-div").html("");
+                            $("#content-div").append(html);
+                          });
+  					});
+  });
